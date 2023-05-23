@@ -1,0 +1,157 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table PaymentEvent {
+  id Int [pk, increment]
+  owner String [not null]
+  creator String [not null]
+  payment_channel payment_channels [not null]
+  order_id String [not null]
+  accountFrom String [not null]
+  callback_url String [not null]
+  naration String [not null]
+  client_callback_url String
+  recurrent Boolean [not null, default: false]
+  recurrent_interval recurrent_intervals [not null]
+  max_recurrence Int [default: 1]
+  recurrent_date DateTime [not null]
+  event_status event_status [not null]
+  createdat DateTime [not null]
+  modifiedat DateTime [not null]
+  Tags Tags [not null]
+}
+
+Table RecurrentPaymentEvent {
+  id Int [pk, increment]
+  orginal_payment_event Int [not null]
+  next_recurrence DateTime [not null]
+  round_trips Int [not null, default: 0]
+  createdat DateTime [not null]
+  modifiedat DateTime [not null]
+}
+
+Table PaymentEventLog {
+  id String [pk]
+  payment_event String [not null]
+  createdat DateTime [not null]
+  action_by String [not null]
+  action action_types [not null]
+}
+
+Table Contact {
+  id Int [pk, increment]
+  owner String [not null]
+  type contact_types [not null]
+  phone_no String [not null]
+  acct_ref String [not null]
+  acct String [not null]
+  paybill String [not null]
+  till_no String [not null]
+  address String [not null]
+  swift_code String [not null]
+  bank_code String [not null]
+  branch_name String [not null]
+  Transaction Transaction [not null]
+}
+
+Table Transaction {
+  id Int [pk, increment]
+  payment_event Int [not null]
+  owner String [not null]
+  initiated_by String [not null]
+  approved_by String [not null]
+  accountFrom String [not null]
+  naration String [not null]
+  client_callback_url String [not null]
+  callback_url String [not null]
+  channel channels [not null]
+  phone_no String [not null]
+  acct_ref String [not null]
+  acct String [not null]
+  paybill String [not null]
+  till_no String [not null]
+  address String [not null]
+  swift_code String [not null]
+  bank_code String [not null]
+  branch_name String [not null]
+  amount Float [not null]
+  status transaction_status [not null]
+  createdat DateTime [not null]
+  executedat DateTime
+  modifiedat DateTime [not null]
+  meta_data Json [not null]
+  contactId Int [not null]
+  Contact Contact
+}
+
+Table Tags {
+  id Int [pk, increment]
+  owner String [not null]
+  name String [not null]
+  createdat DateTime [not null]
+  modifiedat DateTime [not null]
+  paymentEvents PaymentEvent [not null]
+
+  indexes {
+    (owner, name) [unique]
+  }
+}
+
+Enum payment_channels {
+  MPESA
+  PAYBILL_SAF
+  TILL_SAF
+  PAYBILL_AIR
+  TILL_AIR
+  BANK
+}
+
+Enum recurrent_intervals {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+Enum event_status {
+  CREATED
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+Enum action_types {
+  APPROVED
+  REJECTED
+  CREATED
+  MODIFY
+}
+
+Enum contact_types {
+  MPESA
+  PAYBILL_SAF
+  TILL_SAF
+  PAYBILL_AIR
+  TILL_AIR
+  BANK
+}
+
+Enum transaction_status {
+  CREATED
+  APPROVED
+  PENDING
+  SUCCESSFULL
+  FAILED
+}
+
+Enum channels {
+  MPESA
+  MPESA_PAYBILL
+  MPESA_TILL
+  BANK
+  AIRTIME
+  DATABUNDLES
+}
+
+Ref: Transaction.contactId > Contact.id

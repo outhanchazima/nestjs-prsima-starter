@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model PaymentEvent {
+  id                  Int                 @id @default(autoincrement())
+  owner               String
+  creator             String
+  payment_channel     payment_channels
+  order_id            String
+  accountFrom         String
+  callback_url        String
+  naration            String
+  client_callback_url String?
+  recurrent           Boolean             @default(false)
+  recurrent_interval  recurrent_intervals
+  max_recurrence      Int?                @default(1)
+  recurrent_date      DateTime
+  event_status        event_status
+  createdat           DateTime
+  modifiedat          DateTime
+  Tags                Tags[]
+
+  @@index([owner])
+  @@index([payment_channel])
+  @@index([event_status])
+}
+
+model RecurrentPaymentEvent {
+  id                    Int      @id @default(autoincrement())
+  orginal_payment_event Int
+  next_recurrence       DateTime
+  round_trips           Int      @default(0)
+  createdat             DateTime
+  modifiedat            DateTime
+
+  @@index([orginal_payment_event])
+}
+
+enum payment_channels {
+  MPESA
+  PAYBILL_SAF
+  TILL_SAF
+  PAYBILL_AIR
+  TILL_AIR
+  BANK
+}
+
+enum recurrent_intervals {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum event_status {
+  CREATED
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+model PaymentEventLog {
+  id            String       @id @default(uuid())
+  payment_event String
+  createdat     DateTime
+  action_by     String
+  action        action_types
+
+  @@index([payment_event])
+}
+
+enum action_types {
+  APPROVED
+  REJECTED
+  CREATED
+  MODIFY
+}
+
+model Contact {
+  id          Int           @id @default(autoincrement())
+  owner       String
+  type        contact_types
+  phone_no    String
+  acct_ref    String
+  acct        String
+  paybill     String
+  till_no     String
+  address     String
+  swift_code  String
+  bank_code   String
+  branch_name String
+  Transaction Transaction[]
+
+  @@index([owner])
+  @@index([type])
+}
+
+enum contact_types {
+  MPESA
+  PAYBILL_SAF
+  TILL_SAF
+  PAYBILL_AIR
+  TILL_AIR
+  BANK
+}
+
+model Transaction {
+  id                  Int                @id @default(autoincrement())
+  payment_event       Int
+  owner               String
+  initiated_by        String
+  approved_by         String
+  accountFrom         String
+  naration            String
+  client_callback_url String
+  callback_url        String
+  channel             channels
+  phone_no            String
+  acct_ref            String
+  acct                String
+  paybill             String
+  till_no             String
+  address             String
+  swift_code          String
+  bank_code           String
+  branch_name         String
+  amount              Float
+  status              transaction_status
+  createdat           DateTime
+  executedat          DateTime?
+  modifiedat          DateTime
+  meta_data           Json
+  contactId           Int
+  Contact             Contact?           @relation(fields: [contactId], references: [id])
+
+  @@index([payment_event])
+  @@index([owner])
+  @@index([channel])
+  @@index([status])
+}
+
+enum transaction_status {
+  CREATED
+  APPROVED
+  PENDING
+  SUCCESSFULL
+  FAILED
+}
+
+enum channels {
+  MPESA
+  MPESA_PAYBILL
+  MPESA_TILL
+  BANK
+  AIRTIME
+  DATABUNDLES
+}
+
+model Tags {
+  id         Int      @id @default(autoincrement())
+  owner      String
+  name       String   @db.VarChar(20)
+  createdat  DateTime
+  modifiedat DateTime
+
+  paymentEvents PaymentEvent[] // Relation to PaymentEvent model
+
+  @@unique([owner, name]) // Uniqueness constraint for owner and name fields 
+  @@index([owner])
+}
